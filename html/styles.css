@@ -9,7 +9,7 @@ body {
 }
 
 .container {
-    max-width: 800px;
+    max-width: 50%;
     margin: 50px auto 0 auto; /* Добавлен верхний отступ */
     padding: 20px;
     background-color: #fff;
@@ -18,7 +18,7 @@ body {
     background-image: url(resources/release_september.jpeg);
     background-size: 100% auto;
     background-repeat: no-repeat;
-    height: 800px;
+    height: 50%;
     position: relative;
 }
 
@@ -179,18 +179,56 @@ h1 {
 
 /* Медиа-запросы для адаптации под мобильные устройства */
 @media (max-width: 600px) {
-    .header {
-        height: 200px; /* Изменена высота для мобильных устройств */
-    }
     .container {
         padding: 10px;
         margin: 10px;
+        background-size: cover; /* Подгоняем фон */
+        height: auto; /* Высота изменяется в зависимости от содержимого */
     }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    .social-icon img {
+        width: 40px; /* Уменьшаем размер иконок на мобильных */
+        height: 40px;
+    }
+
     .streaming-list {
-        padding: 0;
-        margin: 0;
+        margin: 20px; /* Уменьшаем отступы */
     }
-    .stream-item {
-        width: 70%;
+
+    .streaming-item {
+        width: 100%; /* Занимает всю ширину на мобильных устройствах */
+        justify-content: center; /* Центрируем текст */
+    }
+
+    .streaming-text {
+        font-size: 1em; /* Уменьшаем размер текста */
+    }
+
+    .social-section {
+        bottom: 10px; /* Меньшее расстояние снизу на мобильных */
+    }
+
+    .social-icons {
+        gap: 10px; /* Меньше расстояние между иконками на мобильных */
     }
 }
+/*@media (max-width: 600px) {*/
+/*    .header {*/
+/*        height: 200px; !* Изменена высота для мобильных устройств *!*/
+/*    }*/
+/*    .container {*/
+/*        padding: 10px;*/
+/*        margin: 10px;*/
+/*    }*/
+/*    .streaming-list {*/
+/*        padding: 0;*/
+/*        margin: 0;*/
+/*    }*/
+/*    .stream-item {*/
+/*        width: 70%;*/
+/*    }*/
+/*}*/

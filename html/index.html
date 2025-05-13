@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Дела поважнее – официальный сайт</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
     <link rel="stylesheet" href="styles.css">
@@ -28,47 +31,198 @@
         <!-- Здесь будет адаптированное изображение -->
     </div>
     <section id="release">
-        <div class="container" style="background-image: url(resources/release.jpg);background-size: 100%;background-repeat: no-repeat;">
-            <br>
-            <div class="streaming-list">
-                <a href="https://music.vk.com/link/3r96M" target="_blank" class="streaming-item">
-                    <img src="resources/vk_music.svg" alt="VK Музыка" class="streaming-icon">
-                    <span class="streaming-text">VK Музыка</span>
-                </a>
-                <a href="https://music.yandex.ru/album/31127764" target="_blank" class="streaming-item">
-                    <img src="resources/ya_music.png" alt="Яндекс Музыка" class="streaming-icon">
-                    <span class="streaming-text">Яндекс Музыка</span>
-                </a>
-                <a href="http://open.spotify.com/album/3gCnCUUdgoo0CXP7iTwe21" target="_blank" class="streaming-item">
-                    <img src="resources/spotify.svg" alt="Spotify" class="streaming-icon">
-                    <span class="streaming-text">Spotify</span>
-                </a>
-                <a href="https://music.youtube.com/playlist?list=OLAK5uy_lBOgXS_k8W4LArgkwt-90ldJdHWo0kz00" target="_blank" class="streaming-item">
-                    <img src="resources/youtube_music.svg" alt="YouTube Music" class="streaming-icon">
-                    <span class="streaming-text">YouTube Music</span>
-                </a>
-                <a href="https://music.apple.com/nz/album/1744963197?app=music&mt=1&at=1000lqjf&ct=bq&Is=1&ls=1" target="_blank" class="streaming-item">
-                    <img src="resources/apple_music.svg" alt="Apple Music" class="streaming-icon">
-                    <span class="streaming-text">Apple Music</span>
-                </a>
+        <div class="container">
+            <!-- Вкладки -->
+            <div class="tabs">
+                <button class="tab-button" data-tab="release-tab">Релиз</button>
+                <button class="tab-button active" data-tab="tour-tab">Тур</button>
+            </div>
+
+            <!-- Контент вкладки "Релиз" -->
+            <div id="release-tab" class="tab-content">
+                <div class="streaming-list">
+                    <a href="https://music.vk.com/link/3HnPC" target="_blank" class="streaming-item">
+                        <img src="resources/vk_music.svg" alt="VK Музыка" class="streaming-icon">
+                        <span class="streaming-text">VK Музыка</span>
+                    </a>
+                    <a href="https://music.yandex.ru/album/35246058" target="_blank" class="streaming-item">
+                        <img src="resources/ya_music.png" alt="Яндекс Музыка" class="streaming-icon">
+                        <span class="streaming-text">Яндекс Музыка</span>
+                    </a>
+                    <a href="https://open.spotify.com/album/3ZnfWSOvxkP1lA3USdqq82" target="_blank" class="streaming-item">
+                        <img src="resources/spotify.svg" alt="Spotify" class="streaming-icon">
+                        <span class="streaming-text">Spotify</span>
+                    </a>
+                    <a href="https://music.youtube.com/playlist?list=OLAK5uy_lHUWYB5LYCOCvNmtb9PW7mjfObw4Gn3MA" target="_blank" class="streaming-item">
+                        <img src="resources/youtube_music.svg" alt="YouTube Music" class="streaming-icon">
+                        <span class="streaming-text">YouTube Music</span>
+                    </a>
+                    <a href="https://music.apple.com/nz/album/%D1%84%D0%B5%D0%B2%D1%80%D0%B0%D0%BB%D1%8C-single/1794114655?at=1000lqjf&ct=bq&ls=1" target="_blank" class="streaming-item">
+                        <img src="resources/apple_music.svg" alt="Apple Music" class="streaming-icon">
+                        <span class="streaming-text">Apple Music</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Контент вкладки "Тур" -->
+            <div id="tour-tab" class="tab-content active">
+                <h2 class="tour-header">Тур 2025</h2>
+                <div class="tour-list">
+                    <div class="tour-item">
+                        <div class="tour-info">
+                            <div class="tour-date">_24_МАЯ_</div>
+                            <div class="tour-city">Нижний Новгород</div>
+                        </div>
+                        <a href="https://ticketscloud.com/v1/widgets/common?token=eyJhbGciOiJIUzI1NiIsImlzcyI6InRpY2tldHNjbG91ZC5ydSIsInR5cCI6IkpXVCJ9.eyJwIjoiNWQ3ZmI4NjY0MmIyYjZhMzI5NjI1YjMyIn0.f8LLjhDTa68xuLUNnxHyqXfKEhrk4xaUWih52CEt7PU&lang=ru&event=67dade23312ad933e972a344&s=1" class="tour-ticket">Купить билет</a>
+                    </div>
+                    <div class="tour-item">
+                        <div class="tour-info">
+                            <div class="tour-date">_25_МАЯ_</div>
+                            <div class="tour-city">Казань</div>
+                        </div>
+                        <a href="https://ticketscloud.com/v1/widgets/common?token=eyJhbGciOiJIUzI1NiIsImlzcyI6InRpY2tldHNjbG91ZC5ydSIsInR5cCI6IkpXVCJ9.eyJwIjoiNWQ3ZmI4NjY0MmIyYjZhMzI5NjI1YjMyIn0.f8LLjhDTa68xuLUNnxHyqXfKEhrk4xaUWih52CEt7PU&lang=ru&event=67dc0913e216954965fb6df8&s=1" class="tour-ticket">Купить билет</a>
+                    </div>
+                    <div class="tour-item">
+                        <div class="tour-info">
+                            <div class="tour-date">_27_МАЯ_</div>
+                            <div class="tour-city">Самара</div>
+                        </div>
+                        <a href="https://5beeb8a3c580ac000b516248.ticketscloud.org/e/67dc223f9b842113aa08e1ae" class="tour-ticket">Купить билет</a>
+                    </div>
+                    <div class="tour-item">
+                        <div class="tour-info">
+                            <div class="tour-date">_1_ИЮНЯ_</div>
+                            <div class="tour-city">Санкт-Петербург</div>
+                        </div>
+                        <a href="https://ticketscloud.com/v1/widgets/common?token=eyJhbGciOiJIUzI1NiIsImlzcyI6InRpY2tldHNjbG91ZC5ydSIsInR5cCI6IkpXVCJ9.eyJwIjoiNWQ3ZmI4NjY0MmIyYjZhMzI5NjI1YjMyIn0.f8LLjhDTa68xuLUNnxHyqXfKEhrk4xaUWih52CEt7PU&lang=ru&event=67dadb265d7df75ab688edd3&s=1" class="tour-ticket">Купить билет</a>
+                    </div>
+                    <div class="tour-item">
+                        <div class="tour-info">
+                            <div class="tour-date">_7_ИЮНЯ_</div>
+                            <div class="tour-city">Москва</div>
+                        </div>
+                        <a href="https://www.16tons.ru/concert/2025-dela-povazhnee-07jun/" class="tour-ticket">Купить билет</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
-
 
     <section id="contacts">
-        <div class="container footer">
-            <h2 style="color: white;">Соцсети</h2>
-            <div class="social-icons">
-                <a href="https://t.me/delapovazhnee" target="_blank" class="social-icon">
-                    <img src="resources/tg.png" alt="Telegram">
-                </a>
-                <a href="https://vk.com/delapovazhnee" target="_blank" class="social-icon">
-                    <img src="resources/vk.png" alt="VK">
-                </a>
+        <div class="container">
+            <div class="contacts-frame" style="background-color: #f9f7e8; padding: 1%;">
+            <h2 class="contact-header" style="font-weight: 900; font-size: 1.5em; text-transform: uppercase; margin-bottom: 40px; text-align: center;">Соцсети</h2>
+            
+                <div class="social-list">
+                    <div class="social-item">
+                        <div class="social-info">
+                            <div class="social-name">Telegram</div>
+                        </div>
+                        <a href="https://t.me/delapovazhnee" target="_blank" class="social-link">Подписаться</a>
+                    </div>
+                    <div class="social-item">
+                        <div class="social-info">
+                            <div class="social-name">VK</div>
+                        </div>
+                        <a href="https://vk.com/delapovazhnee" target="_blank" class="social-link">Подписаться</a>
+                    </div>
+                    <div class="social-item">
+                        <div class="social-info">
+                            <div class="social-name">Email</div>
+                        </div>
+                        <a href="mailto:contact@delapovazhnee.ru" class="social-link">Написать</a>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
+    <script>
+        // Функция для парсинга UTM-меток из URL
+        function parseUtmParams() {
+            // Получаем строку запроса из URL
+            const queryString = window.location.search;
+            // Если строка запроса пустая, прекращаем выполнение функции
+            if (!queryString) return {};
+            
+            // Создаем объект для хранения UTM-меток
+            const utmParams = {};
+            
+            // Создаем объект URLSearchParams для удобного парсинга параметров
+            const urlParams = new URLSearchParams(queryString);
+            
+            // Массив с названиями UTM-меток, которые мы хотим отслеживать
+            const utmTags = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content'];
+            
+            // Проходим по всем возможным UTM-меткам и добавляем их в объект, если они есть
+            utmTags.forEach(tag => {
+                if (urlParams.has(tag)) {
+                    utmParams[tag] = urlParams.get(tag);
+                }
+            });
+            
+            return utmParams;
+        }
+
+        // Функция для добавления UTM-меток ко всем ссылкам на странице
+        function addUtmToLinks() {
+            // Получаем UTM-метки из URL
+            const utmParams = parseUtmParams();
+            
+            // Если UTM-меток нет, прекращаем выполнение функции
+            if (Object.keys(utmParams).length === 0) return;
+            
+            // Получаем все ссылки на странице
+            const links = document.querySelectorAll('a[href]');
+            
+            // Создаем строку с UTM-метками для добавления к ссылкам
+            const utmString = Object.entries(utmParams)
+                .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+                .join('&');
+            
+            // Проходим по всем ссылкам и добавляем UTM-метки
+            links.forEach(link => {
+                const href = link.getAttribute('href');
+                
+                // Пропускаем якоря, телефоны, почты и другие специальные ссылки
+                if (href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) {
+                    return;
+                }
+                
+                // Если в ссылке уже есть UTM-метки, не добавляем новые
+                if (href.includes('utm_')) {
+                    return;
+                }
+                
+                // Добавляем UTM-метки к ссылке
+                const separator = href.includes('?') ? '&' : '?';
+                link.setAttribute('href', href + separator + utmString);
+            });
+        }
+
+        // Запускаем функцию после загрузки страницы
+        document.addEventListener('DOMContentLoaded', addUtmToLinks);
+        // JavaScript для переключения вкладок
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Удаление активного класса у всех кнопок и контента
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+
+                    // Добавление активного класса к нажатой кнопке
+                    button.classList.add('active');
+
+                    // Показ соответствующего контента
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+        });
+    </script>
+    <script>
 </body>
 </html>

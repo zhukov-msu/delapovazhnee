@@ -2,16 +2,13 @@ body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #f2f2f2;
+    background-color: #f9f7e8;
     color: #333;
 }
 
 iframe {
-    /*            height: 50px;*/
-
     margin: 30px auto;
     width: 80%;
-    /*            height: 238px;*/
     background-color: #777;
     border-radius:3px;
 }
@@ -30,12 +27,13 @@ iframe {
     align-items: center;
     justify-content: center;
 }
+
 .container {
     max-width: 800px;
-    margin: 50px auto 0 auto; /* Добавлен верхний отступ */
+    margin: 50px auto 0 auto;
     padding: 20px;
     background-color: #fff;
-    border-radius: 8px;
+    border-radius: 0;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -43,9 +41,8 @@ iframe {
     background-image: url(resources/release.jpg);
     background-size: 100%;
     background-repeat: no-repeat;
-    background-position: bottom;"
+    background-position: bottom;
 }
-
 
 h1 {
     margin-bottom: 20px;
@@ -55,6 +52,104 @@ h1 {
     color:#A9A9A9
 }
 
+/* Стили для секции "Контакты" */
+.social-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin: 30px auto;
+    max-width: 600px;
+}
+
+.social-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: none;
+    padding: 0;
+    color: #333;
+    font-weight: 700;
+    width: 100%;
+    border-radius: 0;
+}
+
+.social-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.social-name {
+    font-size: 1.8em;
+    font-weight: 900;
+}
+
+.social-link {
+    border: 2px solid #333;
+    background: none;
+    color: #333;
+    padding: 8px 20px;
+    border-radius: 0;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s, color 0.3s;
+    min-width: 130px;
+    text-align: center;
+}
+
+.social-link:hover {
+    background: #333;
+    color: #fff;
+    transform: none;
+}
+
+/* Стили для вкладок */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.tab-button {
+    background: none;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    font-size: 1.1em;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+    color: #777;
+    transition: color 0.3s;
+}
+
+.tab-button:hover {
+    color: #f39c12;
+}
+
+.tab-button.active {
+    color: #f39c12;
+}
+
+.tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: #f39c12;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
 
 #contacts {
     padding: 40px 0;
@@ -82,7 +177,7 @@ h1 {
 .social-icons {
     display: flex;
     justify-content: center;
-    gap: 20px; /* Расстояние между иконками */
+    gap: 20px;
     margin-top: 20px;
 }
 
@@ -93,13 +188,34 @@ h1 {
 }
 
 .social-icon:hover img {
-    transform: scale(1.1); /* Увеличение иконки при наведении */
-    filter: brightness(1.3); /* Подсветка при наведении */
+    transform: scale(1.1);
+    filter: brightness(1.3);
+}
+
+.contact-button-wrapper {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.contact-button {
+    display: inline-block;
+    background: #f39c12;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.2em;
+    transition: background 0.3s, transform 0.3s;
+}
+
+.contact-button:hover {
+    background: #e67e22;
+    transform: scale(1.05);
 }
 
 #release {
     padding: 10px 0;
-    /*            border-bottom: 1px solid #333;*/
 }
 
 #release h2 {
@@ -135,10 +251,9 @@ h1 {
 }
 
 .release-cover:hover {
-    transform: scale(1.1); /* Увеличение обложки при наведении */
-    filter: brightness(1.2); /* Подсветка обложки при наведении */
+    transform: scale(1.1);
+    filter: brightness(1.2);
 }
-
 
 .streaming-links {
     display: flex;
@@ -178,7 +293,6 @@ h1 {
     color: #f39c12;
 }
 
-
 .streaming-list {
     display: flex;
     flex-direction: column;
@@ -215,22 +329,140 @@ h1 {
     font-size: 1.1em;
 }
 
+/* Стили для вкладки "Тур" */
+.tour-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    margin: 40px auto;
+    max-width: 600px;
+}
 
+.tour-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: none;
+    padding: 0;
+    color: #333;
+    font-weight: 700;
+    width: 100%;
+    border-radius: 0;
+}
+
+.tour-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.tour-date {
+    font-size: 1.2em;
+    color: #1e5eb3;
+    font-weight: bold;
+    margin-bottom: 5px;
+    font-family: monospace;
+}
+
+.tour-city {
+    font-size: 1.8em;
+    margin-bottom: 5px;
+    font-weight: 900;
+}
+
+.tour-ticket {
+    border: 2px solid #333;
+    background: none;
+    color: #333;
+    padding: 8px 20px;
+    border-radius: 0;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background 0.3s, color 0.3s;
+    min-width: 130px;
+    text-align: center;
+}
+
+.tour-ticket:hover {
+    background: #333;
+    color: #fff;
+    transform: none;
+}
+
+#tour-tab {
+    background-color: #f9f7e8;
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+    text-align: center;
+}
+
+.tour-visual {
+    display: none;
+}
+
+.tour-header {
+    font-weight: 900;
+    font-size: 1.5em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    text-align: center;
+    border-bottom: none;
+}
+
+/* Стили для вкладки "Релиз" */
+#release-tab {
+    background-image: url(resources/release.jpg);
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 600px;
+    padding-top: 30px;
+}
 
 /* Медиа-запросы для адаптации под мобильные устройства */
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     .header {
-        height: 200px; /* Изменена высота для мобильных устройств */
+        height: 200px;
     }
     .container {
-        padding: 10px;
+        padding: 15px;
         margin: 10px;
     }
-    .streaming-list {
+    .streaming-list, .social-list {
         padding: 0;
-        margin: 0;
+        margin: 40px 10px;
     }
-    .stream-item {
-        width: 70%;
+    .streaming-item {
+        transform: scale(0.8)
+    }   
+    .tour-list {
+        padding: 0;
+        margin: 20px 10px;
+        gap: 30px;
+    }
+    .tab-button {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+    .tour-city, .social-name {
+        font-size: 1.5em;
+    }
+    .tour-date {
+        font-size: 1em;
+    }
+    .tour-item, .social-item {
+        flex-direction: column;
+        gap: 15px;
+        align-items: center;
+    }
+    .tour-info, .social-info {
+        align-items: center;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    #release-tab {
+        min-height: 400px;
     }
 }

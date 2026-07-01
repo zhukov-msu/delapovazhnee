@@ -152,8 +152,18 @@ export function drawBackground(ctx, cam, worldW) {
   drawSand(ctx, cam, worldW, h);
 }
 
-// Procedural pixel runner with a slight run bob driven by t.
-export function drawRunner(ctx, runner, t) {
+// One procedural look per character index: torso/head accent color + a small
+// silhouette tweak so the 4 variants are tellable apart at a glance.
+const CHAR_VARIANTS = [
+  { torso: PALETTE.flare, head: PALETTE.sand, trim: PALETTE.sun },   // 0: default sunset runner
+  { torso: PALETTE.arcade, head: PALETTE.foam, trim: PALETTE.grape }, // 1: arcade teal
+  { torso: PALETTE.grape, head: PALETTE.sun, trim: PALETTE.flare },  // 2: grape/sun
+  { torso: PALETTE.sun, head: PALETTE.ink, trim: PALETTE.arcade },   // 3: sun/ink
+];
+
+// Procedural pixel runner with a slight run bob driven by t. charIndex (0-3)
+// selects one of 4 visually distinct palette variants.
+export function drawRunner(ctx, runner, t, charIndex = 0) {
   ctx.imageSmoothingEnabled = false;
   const w = GAME.RUNNER_W;
   const h = GAME.RUNNER_H;
@@ -161,10 +171,12 @@ export function drawRunner(ctx, runner, t) {
   const y = runner.y - h;
   const bob = runner.onGround ? Math.round(Math.sin(t * 12) * 2) : 0;
 
-  if (images.runner) {
-    ctx.drawImage(images.runner, px(x), px(y + bob), w, h);
+  if (images["char_" + charIndex]) {
+    ctx.drawImage(images["char_" + charIndex], px(x), px(y + bob), w, h);
     return;
   }
+
+  const variant = CHAR_VARIANTS[charIndex] || CHAR_VARIANTS[0];
 
   ctx.save();
   ctx.fillStyle = PALETTE.ink;
@@ -172,10 +184,13 @@ export function drawRunner(ctx, runner, t) {
   ctx.fillRect(px(x + 6), px(y + h - 12 + bob), 8, 12);
   ctx.fillRect(px(x + w - 14), px(y + h - 12 + bob), 8, 12);
   // torso
-  ctx.fillStyle = PALETTE.flare;
+  ctx.fillStyle = variant.torso;
   ctx.fillRect(px(x + 4), px(y + h * 0.35 + bob), w - 8, h * 0.4);
+  // trim stripe across the torso — extra silhouette cue per variant
+  ctx.fillStyle = variant.trim;
+  ctx.fillRect(px(x + 4), px(y + h * 0.5 + bob), w - 8, 4);
   // head
-  ctx.fillStyle = PALETTE.sand;
+  ctx.fillStyle = variant.head;
   ctx.fillRect(px(x + 8), px(y + bob), w - 16, h * 0.3);
   ctx.restore();
 }
@@ -225,4 +240,66 @@ export function drawObstacle(ctx, o) {
   } else {
     drawSingleObstacle(ctx, o);
   }
+}
+
+function drawGemCollectible(ctx, o) {
+  const cx = px(o.x + o.w / 2);
+  const cy = px(o.y + o.h / 2);
+  const r = Math.min(o.w, o.h) / 2;
+  ctx.save();
+  ctx.fillStyle = PALETTE.arcade;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r);
+  ctx.lineTo(cx + r, cy);
+  ctx.lineTo(cx, cy + r);
+  ctx.lineTo(cx - r, cy);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.foam;
+  ctx.fillRect(px(cx - 2), px(cy - r * 0.4), 4, 4);
+  ctx.restore();
+}
+
+function drawStarCollectible(ctx, o) {
+  const cx = px(o.x + o.w / 2);
+  const cy = px(o.y + o.h / 2);
+  const r = Math.min(o.w, o.h) / 2;
+  ctx.save();
+  ctx.fillStyle = PALETTE.sun;
+  // Chunky pixel-star: a vertical + horizontal bar plus a diamond core.
+  ctx.fillRect(px(cx - 2), px(cy - r), 4, r * 2);
+  ctx.fillRect(px(cx - r), px(cy - 2), r * 2, 4);
+  ctx.fillStyle = PALETTE.flare;
+  ctx.fillRect(px(cx - 3), px(cy - 3), 6, 6);
+  ctx.restore();
+}
+
+function drawShellCollectible(ctx, o) {
+  const cx = px(o.x + o.w / 2);
+  const cy = px(o.y + o.h / 2);
+  const r = Math.min(o.w, o.h) / 2;
+  ctx.save();
+  ctx.fillStyle = PALETTE.sand;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = PALETTE.grape;
+  for (let i = -1; i <= 1; i++) {
+    ctx.fillRect(px(cx + i * 4 - 1), px(cy - r * 0.5), 2, r);
+  }
+  ctx.restore();
+}
+
+const COLLECTIBLE_DRAWERS = [drawGemCollectible, drawStarCollectible, drawShellCollectible];
+
+// Procedural collectible per item.kind (0=gem, 1=star, 2=shell — 3 distinct
+// little shapes/colors from PALETTE). Swap point: images["item_" + kind].
+export function drawCollectible(ctx, item) {
+  ctx.imageSmoothingEnabled = false;
+  const name = "item_" + item.kind;
+  if (images[name]) {
+    ctx.drawImage(images[name], px(item.x), px(item.y), item.w, item.h);
+    return;
+  }
+  const draw = COLLECTIBLE_DRAWERS[item.kind] || drawGemCollectible;
+  draw(ctx, item);
 }

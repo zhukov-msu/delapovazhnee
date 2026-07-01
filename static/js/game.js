@@ -1,0 +1,146 @@
+// DOM glue for the runner game: canvas sizing, RAF loop, input, and a small
+// Game controller the page shell (Task 14) wires start/restart + analytics into.
+//
+// IMPORTANT: nothing here touches the DOM or requestAnimationFrame at module
+// top level — every browser API is reached only from inside a method, so the
+// module can be imported (e.g. under Node for a smoke import) without side effects.
+import { GAME } from "./config.js";
+import { jump } from "./physics.js";
+import { createGame, startGame, stepGame } from "./gamestate.js";
+import { drawBackground, drawRunner, drawObstacle } from "./sprites.js";
+
+// A no-op default so hooks are always callable before the shell sets real ones.
+const noop = () => {};
+
+export class Game {
+  // canvas: an HTMLCanvasElement (or its id string, resolved in start()).
+  constructor(canvas) {
+    this.canvasRef = canvas;
+    this.game = createGame(); // { runner, obs, state, score }
+
+    // Shell hooks — settable by Task 14. Kept simple and always callable.
+    this.onStart = noop;
+    this.onScore = noop;   // (score)
+    this.onGameOver = noop; // (score)
+
+    // Runtime handles created lazily in start(); null until then.
+    this.canvas = null;
+    this.ctx = null;
+    this.worldW = 640; // visible world width in logical px; recomputed in resize()
+    this.cam = { x: 0 }; // parallax camera; advances with elapsed time
+    this.t = 0;          // seconds elapsed, drives run-bob + parallax
+    this.raf = 0;
+    this.last = 0;
+    this.running = false; // whether the RAF loop is active
+
+    // Bound listeners so we can add/remove the exact same references.
+    this._onResize = this._resize.bind(this);
+    this._onKeyDown = this.__keydown.bind(this);
+    this._onMouseDown = this.__mousedown.bind(this);
+    this._onTouchStart = this.__touchstart.bind(this);
+    this._frame = this._frame.bind(this);
+  }
+
+  // Boot the loop: resolve the canvas, wire input + resize, size the backing
+  // store, start the game state, and kick off requestAnimationFrame.
+  start() {
+    if (!this.canvas) this._mount();
+    startGame(this.game);
+    this.t = 0;
+    this.cam.x = 0;
+    this.onStart();
+    this._resize();
+    if (!this.running) {
+      this.running = true;
+      this.last = performance.now();
+      this.raf = requestAnimationFrame(this._frame);
+    }
+  }
+
+  // Restart from a fresh state (used by the shell's replay control).
+  reset() {
+    this.start();
+  }
+
+  // Resolve the canvas element + 2D context and attach listeners. Idempotent.
+  _mount() {
+    const el =
+      typeof this.canvasRef === "string"
+        ? document.getElementById(this.canvasRef)
+        : this.canvasRef;
+    if (!el) throw new Error("Game: canvas element not found");
+    this.canvas = el;
+    this.ctx = el.getContext("2d");
+    // Let the browser handle taps without emulating 300ms click / gestures.
+    this.canvas.style.touchAction = "manipulation";
+
+    window.addEventListener("resize", this._onResize);
+    window.addEventListener("orientationchange", this._onResize);
+    window.addEventListener("keydown", this._onKeyDown);
+    this.canvas.addEventListener("mousedown", this._onMouseDown);
+    this.canvas.addEventListener("touchstart", this._onTouchStart, { passive: false });
+  }
+
+  // Fixed logical height (WORLD_H); CSS fills the viewport; backing store is
+  // scaled by devicePixelRatio for crisp pixels. worldW = visible world width.
+  _resize() {
+    if (!this.canvas || !this.ctx) return;
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    const cssH = this.canvas.clientHeight;
+    const cssW = this.canvas.clientWidth;
+    if (!cssH || !cssW) return; // not laid out yet
+    const scale = cssH / GAME.WORLD_H; // logical -> css
+    this.worldW = cssW / scale; // visible world width
+    this.canvas.width = Math.round(cssW * dpr);
+    this.canvas.height = Math.round(cssH * dpr);
+    this.ctx.setTransform(dpr * scale, 0, 0, dpr * scale, 0, 0);
+    this.ctx.imageSmoothingEnabled = false;
+  }
+
+  // One discrete jump per input event while running. Single tap = one jump,
+  // double tap = double jump — that comes for free from physics.jump()'s max-2.
+  handleJump() {
+    if (this.game.state === "running") jump(this.game.runner);
+  }
+
+  __keydown(e) {
+    if (e.code === "Space" || e.code === "ArrowUp") {
+      e.preventDefault(); // stop the page from scrolling on Space/ArrowUp
+      this.handleJump();
+    }
+  }
+
+  __mousedown() {
+    this.handleJump();
+  }
+
+  __touchstart(e) {
+    e.preventDefault(); // suppress synthetic mouse events + scrolling
+    this.handleJump();
+  }
+
+  // RAF loop: advance state by a clamped dt, fire hooks, render.
+  _frame(now) {
+    const dt = Math.min((now - this.last) / 1000, 1 / 30); // clamp: no tunneling on tab-switch
+    this.last = now;
+    this.t += dt;
+
+    const { over, scoreDelta } = stepGame(this.game, dt, this.worldW);
+    // Advance the parallax camera at the current scroll speed while running.
+    if (this.game.state === "running") this.cam.x += this.game.obs.speed * dt;
+
+    if (scoreDelta) this.onScore(this.game.score);
+    if (over) this.onGameOver(this.game.score);
+
+    this._render();
+    this.raf = requestAnimationFrame(this._frame);
+  }
+
+  _render() {
+    const ctx = this.ctx;
+    if (!ctx) return;
+    drawBackground(ctx, this.cam, this.worldW);
+    for (const o of this.game.obs.obstacles) drawObstacle(ctx, o);
+    drawRunner(ctx, this.game.runner, this.t);
+  }
+}

@@ -1,0 +1,15 @@
+// Shared game constants. Units: logical world pixels; y grows downward.
+export const GAME = {
+  WORLD_H: 360,          // fixed logical height; width comes from viewport
+  GROUND_Y: 300,         // runner baseline (top of feet band)
+  GRAVITY: 2600,         // px/s^2
+  JUMP_V: -760,          // px/s initial velocity, single jump
+  DOUBLE_JUMP_V: -900,   // px/s for the second (air) jump — STRONGER than JUMP_V so the
+                         // air jump (which resets vy) reaches a clearly higher apex
+  RUN_SPEED: 260,        // starting world scroll speed px/s
+  SPEED_RAMP: 3.5,       // px/s added per second survived
+  MAX_SPEED: 560,        // speed cap
+  RUNNER_W: 34,
+  RUNNER_H: 48,
+  RUNNER_X: 90,          // fixed horizontal position of the runner
+};

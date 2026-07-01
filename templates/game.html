@@ -1,5 +1,46 @@
 <!doctype html>
-<html lang="ru"><head><meta charset="utf-8"><title>Дела поважнее — игра</title></head>
-<body data-variant="{{ variant }}" data-sid="{{ sid }}">
-  <canvas id="game"></canvas><!-- replaced in later tasks -->
-</body></html>
+<html lang="ru" data-variant="{{ variant }}" data-sid="{{ sid }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Дела поважнее — беги по пляжу</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;700&family=Pixelify+Sans:wght@400;500;600;700&family=VT323&display=swap">
+  <link rel="stylesheet" href="/static/css/game.css">
+</head>
+<body>
+  <div id="stage">
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hud hidden"><span id="score">0</span></div>
+    <button id="mute" class="mute" aria-label="Звук">🔊</button>
+    <a id="home" class="home" href="/home">На главную</a>
+
+    <!-- CTA block (moved into #start for variant A, into #over for variant B by boot.js) -->
+    <template id="cta-tpl">
+      <div class="cta">
+        <img class="qr" alt="QR пресейв" />
+        <a class="presave btn" target="_blank" rel="noopener">Сделать пресейв</a>
+      </div>
+    </template>
+
+    <div id="start" class="overlay">
+      <h1>ДЕЛА ПОВАЖНЕЕ</h1>
+      <p>Прыгай через отдыхающих. Пробел или тап.</p>
+      <button id="play" class="btn big">Играть</button>
+      <div id="start-cta"></div>
+    </div>
+
+    <div id="over" class="overlay hidden">
+      <h1>Игра окончена</h1>
+      <p>Счёт: <span id="final-score">0</span></p>
+      <button id="retry" class="btn big">Ещё раз</button>
+      <div id="over-cta"></div>
+    </div>
+  </div>
+
+  <script type="module" src="/static/js/selftest.js"></script>
+  <script type="module" src="/static/js/boot.js"></script>
+</body>
+</html>

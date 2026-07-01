@@ -23,5 +23,12 @@ g2.obs.obstacles.push({ x: 40, y: GAME.GROUND_Y - 26, w: 44, h: 26, type: "singl
 const r2 = stepGame(g2, 1 / 60, 640);
 ok(r2.scoreDelta >= 1 && g2.score >= 1 && r2.over === false, "score increments when an obstacle passes");
 
+// Catching an item raises score without setting over. Place an item overlapping an airborne runner.
+const g3 = createGame(); startGame(g3);
+g3.runner.y = 170; // airborne
+g3.col.items.push({ x: GAME.RUNNER_X, y: 150, w: GAME.ITEM_W, h: GAME.ITEM_H, kind: 0, caught: false });
+const r3 = stepGame(g3, 1 / 60, 640);
+ok(r3.scoreDelta >= 1 && g3.score >= 1 && r3.over === false, "catching an item raises score without ending game");
+
 if (failed) { console.error(`GAMESTATE SMOKE: ${failed} FAILED`); process.exit(1); }
 console.log("GAMESTATE SMOKE: ALL PASS");

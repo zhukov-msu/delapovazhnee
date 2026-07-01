@@ -2,6 +2,7 @@
 // Open the game with ?selftest=1 to run. Results print to console + on-page banner.
 import { GAME } from "./config.js";
 import { createRunner, jump, stepRunner } from "./physics.js";
+import { createGameState, stepObstacles, collides, runnerBox } from "./obstacles.js";
 
 export function run(assert) {
   // Single jump leaves the ground.
@@ -32,6 +33,23 @@ export function run(assert) {
   const g = createRunner(); jump(g);
   for (let i = 0; i < 600; i++) stepRunner(g, 1 / 60);
   assert(g.onGround === true && Math.abs(g.y - GAME.GROUND_Y) < 0.5, "lands back on ground");
+
+  // AABB overlap detection.
+  assert(collides({x:0,y:0,w:10,h:10}, {x:5,y:5,w:10,h:10}) === true, "AABB overlap true");
+  assert(collides({x:0,y:0,w:10,h:10}, {x:20,y:0,w:10,h:10}) === false, "AABB apart false");
+
+  // Obstacles spawn over time and scroll left.
+  const gs = createGameState();
+  for (let i = 0; i < 300; i++) stepObstacles(gs, 1 / 60);
+  assert(gs.obstacles.length > 0, "obstacles spawn over time");
+  assert(gs.speed >= GAME.RUN_SPEED, "speed does not drop below start");
+  assert(gs.speed <= GAME.MAX_SPEED, "speed capped");
+
+  // Score increments as obstacles pass the runner.
+  const gs2 = createGameState();
+  let ticks = 0;
+  while (gs2.score === 0 && ticks < 3000) { stepObstacles(gs2, 1 / 60); ticks++; }
+  assert(gs2.score >= 1, "score increments when an obstacle passes");
 }
 
 // Browser bootstrap.

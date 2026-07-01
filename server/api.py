@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 from typing import Literal
-from fastapi import APIRouter
+from fastapi import APIRouter, Query, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 
 from server.config import Settings
@@ -33,5 +34,22 @@ def build_api_router(settings: Settings) -> APIRouter:
         finally:
             conn.close()
         return {"ok": True}
+
+    @router.get("/go/presave")
+    def go_presave(
+        v: str = Query(...),
+        src: str = Query("button"),
+        sid: str = Query(""),
+    ):
+        if v not in ("A", "B"):
+            raise HTTPException(status_code=400, detail="bad variant")
+        if src not in ("button", "qr"):
+            src = "button"
+        conn = _conn()
+        try:
+            insert_event(conn, sid, v, "cta_click", {"src": src})
+        finally:
+            conn.close()
+        return RedirectResponse(settings.presave_url, status_code=302)
 
     return router

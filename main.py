@@ -4,7 +4,7 @@ from __future__ import annotations
 import pathlib
 import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -42,10 +42,15 @@ def create_app(settings: Settings) -> FastAPI:
             resp.set_cookie(VARIANT_COOKIE, variant, max_age=COOKIE_MAX_AGE, samesite="lax")
         return resp
 
-    # Game assets.
+    # Existing landing (moved to templates/home.html; its assets under static/home/).
+    # Served as a plain file (NOT via Jinja) so the JS template literals in it are untouched.
+    @app.get("/home", response_class=HTMLResponse)
+    @app.get("/home/", response_class=HTMLResponse)
+    def home_page():
+        return FileResponse(BASE_DIR / "templates" / "home.html")
+
+    # Game assets (also serves the landing's assets under /static/home/).
     app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-    # Existing landing, served untouched under /home/ (relative asset paths resolve there).
-    app.mount("/home", StaticFiles(directory=str(BASE_DIR / "html"), html=True), name="home")
 
     # Routers added in later tasks:
     from server.api import build_api_router

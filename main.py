@@ -40,9 +40,9 @@ def create_app(settings: Settings) -> FastAPI:
     app.mount("/home", StaticFiles(directory=str(BASE_DIR / "html"), html=True), name="home")
 
     # Routers added in later tasks:
-    #   from server.api import build_api_router
+    from server.api import build_api_router
+    app.include_router(build_api_router(settings))
     #   from server.admin import build_admin_router
-    #   app.include_router(build_api_router(settings))
     #   app.include_router(build_admin_router(settings))
     return app
 

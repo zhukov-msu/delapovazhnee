@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Вход — админка</title>
+<link rel="stylesheet" href="/static/css/admin.css"></head>
+<body class="login">
+  <form method="post" action="/admin/login" class="login-card">
+    <h1>Админка</h1>
+    {% if error %}<p class="err">Неверный логин или пароль</p>{% endif %}
+    <input name="username" placeholder="Логин" autocomplete="username">
+    <input name="password" type="password" placeholder="Пароль" autocomplete="current-password">
+    <button type="submit">Войти</button>
+  </form>
+</body></html>

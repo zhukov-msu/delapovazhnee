@@ -55,8 +55,8 @@ def create_app(settings: Settings) -> FastAPI:
     # Routers added in later tasks:
     from server.api import build_api_router
     app.include_router(build_api_router(settings))
-    #   from server.admin import build_admin_router
-    #   app.include_router(build_admin_router(settings))
+    from server.admin import build_admin_router
+    app.include_router(build_admin_router(settings, templates))
     return app
 
 

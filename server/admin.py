@@ -1,12 +1,16 @@
-"""Admin auth and dashboard (dashboard body filled in Task 8)."""
+"""Admin auth, metrics dashboard, and raw-events CSV export."""
 from __future__ import annotations
 
+import csv
+import io
 import secrets
 from fastapi import APIRouter, Request, Form
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi.responses import RedirectResponse, HTMLResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 
 from server.config import Settings
+from server.db import get_conn, fetch_all_events
+from server.metrics import compute_dashboard
 
 
 def build_admin_router(settings: Settings, templates: Jinja2Templates) -> APIRouter:
@@ -38,7 +42,29 @@ def build_admin_router(settings: Settings, templates: Jinja2Templates) -> APIRou
     def dashboard(request: Request):
         if not is_admin(request):
             return RedirectResponse("/admin/login", status_code=302)
-        # Stub replaced in Task 8.
-        return HTMLResponse("<h1>Dashboard</h1>")
+        conn = get_conn(settings.db_path)
+        try:
+            data = compute_dashboard(conn)
+        finally:
+            conn.close()
+        return templates.TemplateResponse(request, "admin.html", {"d": data})
+
+    @router.get("/export.csv")
+    def export_csv(request: Request):
+        if not is_admin(request):
+            return RedirectResponse("/admin/login", status_code=302)
+        conn = get_conn(settings.db_path)
+        try:
+            rows = fetch_all_events(conn)
+        finally:
+            conn.close()
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(["id", "ts", "session_id", "variant", "event_type", "meta"])
+        for r in rows:
+            w.writerow([r["id"], r["ts"], r["session_id"], r["variant"], r["event_type"], r["meta"]])
+        buf.seek(0)
+        return StreamingResponse(iter([buf.getvalue()]), media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=events.csv"})
 
     return router

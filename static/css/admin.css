@@ -1,0 +1,9 @@
+body.admin { font-family: monospace; margin: 24px; }
+table.metrics { border-collapse: collapse; width: 100%; max-width: 720px; }
+table.metrics th, table.metrics td { border: 1px solid #999; padding: 6px 10px; text-align: left; }
+table.metrics tr.hi { font-weight: bold; }
+.bars { display: flex; gap: 8px; align-items: flex-end; height: 160px; }
+.bars .day { display: flex; gap: 2px; align-items: flex-end; height: 100%; }
+.bars .bar { width: 10px; background: #c60; }
+.bars .bar.b { background: #06c; }
+.login-card { max-width: 280px; margin: 10vh auto; display: flex; flex-direction: column; gap: 10px; }

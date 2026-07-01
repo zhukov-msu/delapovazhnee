@@ -23,3 +23,32 @@ def test_logout_clears_session(client):
     client.get("/admin/logout")
     r = client.get("/admin", follow_redirects=False)
     assert r.status_code in (302, 307)
+
+from server.db import get_conn, init_db, insert_event
+
+def _login(client):
+    client.post("/admin/login", data={"username": "admin", "password": "secret"})
+
+def test_dashboard_shows_variant_columns(client, settings):
+    conn = get_conn(settings.db_path); init_db(conn)
+    insert_event(conn, "a1", "A", "cta_view", {})
+    insert_event(conn, "a1", "A", "cta_click", {"src": "button"})
+    _login(client)
+    r = client.get("/admin")
+    assert r.status_code == 200
+    assert "Вариант A" in r.text and "Вариант B" in r.text
+    assert "CVR" in r.text
+
+def test_export_csv_requires_auth(client):
+    r = client.get("/admin/export.csv", follow_redirects=False)
+    assert r.status_code in (302, 307)
+
+def test_export_csv_returns_rows(client, settings):
+    conn = get_conn(settings.db_path); init_db(conn)
+    insert_event(conn, "a1", "A", "visit", {})
+    _login(client)
+    r = client.get("/admin/export.csv")
+    assert r.status_code == 200
+    assert "text/csv" in r.headers["content-type"]
+    assert r.text.splitlines()[0] == "id,ts,session_id,variant,event_type,meta"
+    assert "a1" in r.text

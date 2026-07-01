@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><title>Дашборд — A/B пресейв</title>
+<link rel="stylesheet" href="/static/css/admin.css"></head>
+<body class="admin">
+  <header><h1>Дашборд A/B пресейва</h1>
+    <a href="/admin/export.csv" class="btn">Экспорт CSV</a>
+    <a href="/admin/logout" class="btn">Выйти</a>
+  </header>
+
+  {% set A = d.variants.A %}{% set B = d.variants.B %}
+  <table class="metrics">
+    <thead><tr><th>Метрика</th><th>Вариант A (старт)</th><th>Вариант B (Game Over)</th></tr></thead>
+    <tbody>
+      <tr><td>Уникальные сессии</td><td>{{ A.sessions }}</td><td>{{ B.sessions }}</td></tr>
+      <tr><td>CTA показы (уник. сессий)</td><td>{{ A.cta_view_sessions }}</td><td>{{ B.cta_view_sessions }}</td></tr>
+      <tr><td>CTA клики (уник. сессий)</td><td>{{ A.cta_click_sessions }}</td><td>{{ B.cta_click_sessions }}</td></tr>
+      <tr><td>— кнопка / QR</td><td>{{ A.cta_click_button }} / {{ A.cta_click_qr }}</td><td>{{ B.cta_click_button }} / {{ B.cta_click_qr }}</td></tr>
+      <tr class="hi"><td>CVR</td><td>{{ '%.1f'|format(A.cvr*100) }}%</td><td>{{ '%.1f'|format(B.cvr*100) }}%</td></tr>
+      <tr><td>Игр начато / завершено</td><td>{{ A.games_started }} / {{ A.games_finished }}</td><td>{{ B.games_started }} / {{ B.games_finished }}</td></tr>
+      <tr><td>Средний счёт</td><td>{{ '%.1f'|format(A.avg_score) }}</td><td>{{ '%.1f'|format(B.avg_score) }}</td></tr>
+    </tbody>
+  </table>
+
+  <p class="leader">
+    {% if d.leader %}Лидирует <b>Вариант {{ d.leader }}</b>{% else %}Пока паритет{% endif %}
+    {% if d.prob_b_beats_a is not none %}
+      — вероятность, что B лучше A: <b>{{ '%.0f'|format(d.prob_b_beats_a * 100) }}%</b>;
+      точный тест Фишера: p={{ '%.3f'|format(d.fisher_p) }}
+      <span class="caveat">(при малом трафике выводы делайте осторожно)</span>
+    {% else %}
+      — данных пока недостаточно для сравнения
+    {% endif %}
+  </p>
+
+  <h2>Заходы по дням</h2>
+  <div class="bars">
+    {% set maxv = (d.daily | map(attribute='A') | list + d.daily | map(attribute='B') | list + [1]) | max %}
+    {% for row in d.daily %}
+      <div class="day">
+        <div class="bar a" style="height: {{ (row.A / maxv * 100)|round }}%" title="A: {{ row.A }}"></div>
+        <div class="bar b" style="height: {{ (row.B / maxv * 100)|round }}%" title="B: {{ row.B }}"></div>
+        <span class="lbl">{{ row.date[5:] }}</span>
+      </div>
+    {% endfor %}
+  </div>
+</body></html>

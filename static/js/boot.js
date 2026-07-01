@@ -4,7 +4,7 @@ import { readSession, markVisited, createEmitter, goPresaveUrl } from "./ab.js";
 import { Game } from "./game.js";
 import { createAudio } from "./audio.js";
 import { getBest, updateBest, getChar, setChar } from "./prefs.js";
-import { drawRunner } from "./sprites.js";
+import { drawRunner, loadSprites } from "./sprites.js";
 import { GAME } from "./config.js";
 
 // Placeholder tile art (before real PNGs exist): render the same procedural
@@ -55,6 +55,17 @@ function sfxCatch() {
 }
 
 function boot() {
+  // Drop-in PNGs auto-swap on reload; missing files silently keep procedural art.
+  loadSprites({
+    char_0: "/static/sprites/characters/char1.png",
+    char_1: "/static/sprites/characters/char2.png",
+    char_2: "/static/sprites/characters/char3.png",
+    char_3: "/static/sprites/characters/char4.png",
+    item_0: "/static/sprites/items/item1.png",
+    item_1: "/static/sprites/items/item2.png",
+    item_2: "/static/sprites/items/item3.png",
+  });
+
   const root = document.documentElement;
   const session = readSession(root);
   const emit = createEmitter(session);

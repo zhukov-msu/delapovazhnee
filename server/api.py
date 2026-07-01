@@ -6,7 +6,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from server.config import Settings
-from server.db import get_conn, init_db, insert_event
+from server.db import get_conn, insert_event
 
 Variant = Literal["A", "B"]
 EventType = Literal["visit", "game_start", "game_over", "cta_view", "cta_click"]
@@ -23,9 +23,7 @@ def build_api_router(settings: Settings) -> APIRouter:
     router = APIRouter()
 
     def _conn():
-        conn = get_conn(settings.db_path)
-        init_db(conn)
-        return conn
+        return get_conn(settings.db_path)
 
     @router.post("/api/event")
     def post_event(ev: EventIn):  # sync -> runs in threadpool, safe with sqlite

@@ -11,6 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from server.ab import resolve, SID_COOKIE, VARIANT_COOKIE, COOKIE_MAX_AGE
 from server.config import Settings, load_settings
+from server.db import get_conn, init_db
 
 BASE_DIR = pathlib.Path(__file__).resolve().parent
 
@@ -18,6 +19,13 @@ BASE_DIR = pathlib.Path(__file__).resolve().parent
 def create_app(settings: Settings) -> FastAPI:
     app = FastAPI(title="delapovazhnee-game")
     app.state.settings = settings
+
+    # Initialize the sqlite schema once at startup (not per request).
+    _init_conn = get_conn(settings.db_path)
+    try:
+        init_db(_init_conn)
+    finally:
+        _init_conn.close()
     app.add_middleware(SessionMiddleware, secret_key=settings.secret_key)
 
     templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))

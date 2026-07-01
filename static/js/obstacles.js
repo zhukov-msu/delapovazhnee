@@ -18,7 +18,7 @@ function spawn(state, worldW) {
   const umbrella = Math.random() < 0.35;
   const dim = umbrella ? UMBRELLA : SINGLE;
   state.obstacles.push({
-    x: worldW + 20, w: dim.w, h: dim.h,
+    x: worldW + 20, y: GAME.GROUND_Y - dim.h, w: dim.w, h: dim.h,
     type: umbrella ? "umbrella" : "single", passed: false,
   });
 }

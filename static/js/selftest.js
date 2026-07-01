@@ -50,6 +50,16 @@ export function run(assert) {
   let ticks = 0;
   while (gs2.score === 0 && ticks < 3000) { stepObstacles(gs2, 1 / 60); ticks++; }
   assert(gs2.score >= 1, "score increments when an obstacle passes");
+
+  // A grounded runner collides with an obstacle occupying its x-lane.
+  const grounded = createRunner();
+  const spawnedNear = { x: GAME.RUNNER_X, y: GAME.GROUND_Y - 26, w: 44, h: 26, type: "single", passed: false };
+  assert(collides(runnerBox(grounded), spawnedNear) === true, "grounded runner hits ground obstacle in its lane");
+
+  // A runner high in the air clears a short ground obstacle in the same x-lane.
+  const airborne = createRunner();
+  airborne.y = 120; // feet high above the ground
+  assert(collides(runnerBox(airborne), spawnedNear) === false, "airborne runner clears short obstacle");
 }
 
 // Browser bootstrap.

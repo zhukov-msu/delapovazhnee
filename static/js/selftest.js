@@ -3,6 +3,7 @@
 import { GAME } from "./config.js";
 import { createRunner, jump, stepRunner } from "./physics.js";
 import { createGameState, stepObstacles, collides, runnerBox } from "./obstacles.js";
+import { readSession, markVisited, goPresaveUrl } from "./ab.js";
 
 export function run(assert) {
   // Single jump leaves the ground.
@@ -60,6 +61,28 @@ export function run(assert) {
   const airborne = createRunner();
   airborne.y = 120; // feet high above the ground
   assert(collides(runnerBox(airborne), spawnedNear) === false, "airborne runner clears short obstacle");
+
+  // readSession reads the server-injected data-* attributes.
+  const rootB = { dataset: { variant: "B", sid: "sid-xyz" } };
+  const rs = readSession(rootB);
+  assert(rs.variant === "B" && rs.sid === "sid-xyz", "readSession reads server variant/sid");
+
+  // Defensive fallback when attributes are missing/invalid.
+  const rootBad = { dataset: {} };
+  const fb = readSession(rootBad);
+  assert(fb.variant === "A" && typeof fb.sid === "string" && fb.sid.length > 0,
+         "readSession falls back to A + generated sid");
+
+  // Fake localStorage for the visit guard.
+  const mkStore = () => { const m = {}; return {
+    getItem: (k) => (k in m ? m[k] : null), setItem: (k, v) => { m[k] = String(v); } }; };
+  const sv = mkStore();
+  assert(markVisited(sv) === true, "first visit true");
+  assert(markVisited(sv) === false, "second visit false");
+
+  // presave URL shape.
+  assert(goPresaveUrl("A", "sid-1", "button") === "/go/presave?v=A&src=button&sid=sid-1",
+         "presave url shape");
 }
 
 // Browser bootstrap.

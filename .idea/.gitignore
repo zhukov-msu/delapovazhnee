@@ -5,3 +5,6 @@
 /httpRequests/
 .DS_Store
 .idea/
+.claude
+CLAUDE*
+claude*

@@ -3,6 +3,56 @@
 import { readSession, markVisited, createEmitter, goPresaveUrl } from "./ab.js";
 import { Game } from "./game.js";
 import { createAudio } from "./audio.js";
+import { getBest, updateBest, getChar, setChar } from "./prefs.js";
+import { drawRunner } from "./sprites.js";
+import { GAME } from "./config.js";
+
+// Placeholder tile art (before real PNGs exist): render the same procedural
+// runner sprites.drawRunner() draws in-game, scaled/centered into the tile's
+// small canvas. A fake "runner" (just {y, onGround}) is enough since
+// drawRunner only reads those two fields.
+function drawRunnerPreview(ctx, charIndex, w, h) {
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  // drawRunner always paints a GAME.RUNNER_W x GAME.RUNNER_H box with its
+  // top-left at (GAME.RUNNER_X, runner.y - RUNNER_H); undo that fixed
+  // position and re-center+scale the box into this small tile canvas.
+  const scale = (Math.min(w, h) * 0.85) / Math.max(GAME.RUNNER_W, GAME.RUNNER_H);
+  const boxLeft = GAME.RUNNER_X;
+  const boxTop = 0; // runner.y === RUNNER_H below puts the box top at y=0
+  ctx.translate(
+    w / 2 - scale * (boxLeft + GAME.RUNNER_W / 2),
+    h / 2 - scale * (boxTop + GAME.RUNNER_H / 2)
+  );
+  ctx.scale(scale, scale);
+  drawRunner(ctx, { y: GAME.RUNNER_H, onGround: true }, 0, charIndex);
+  ctx.restore();
+}
+
+// Short WebAudio blip on catching a collectible. Optional/best-effort: any
+// failure (no AudioContext, autoplay-blocked) is swallowed silently.
+let catchAudioCtx = null;
+function sfxCatch() {
+  try {
+    if (!catchAudioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      catchAudioCtx = new AC();
+    }
+    const c = catchAudioCtx;
+    const osc = c.createOscillator();
+    const gain = c.createGain();
+    osc.type = "square";
+    osc.frequency.value = 880;
+    gain.gain.value = 0.12;
+    osc.connect(gain);
+    gain.connect(c.destination);
+    const now = c.currentTime;
+    osc.start(now);
+    gain.gain.setValueAtTime(0.12, now);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+    osc.stop(now + 0.06);
+  } catch (_) { /* WebAudio unavailable — ignore */ }
+}
 
 function boot() {
   const root = document.documentElement;
@@ -19,8 +69,45 @@ function boot() {
   const playBtn = document.getElementById("play");
   const retryBtn = document.getElementById("retry");
   const muteBtn = document.getElementById("mute");
+  const bestScoreEl = document.getElementById("best-score");
+  const bestScoreOverEl = document.getElementById("best-score-over");
+  const charTiles = Array.from(document.querySelectorAll(".char-tile"));
 
   const audio = createAudio();
+
+  // --- Character picker: 4 selectable tiles on the start overlay. Cosmetic
+  // only — sets game.charIndex, no effect on physics. Persists via prefs.js. ---
+  function selectChar(i) {
+    setChar(localStorage, i);
+    for (const tile of charTiles) {
+      tile.classList.toggle("selected", Number(tile.dataset.char) === i);
+    }
+  }
+
+  for (const tile of charTiles) {
+    const idx = Number(tile.dataset.char);
+    const canvas = tile.querySelector("canvas");
+    if (canvas) {
+      const tileCtx = canvas.getContext("2d");
+      tileCtx.imageSmoothingEnabled = false;
+      // Placeholder art before PNGs exist: draw the same procedural runner
+      // used in-game, centered in the tile.
+      drawRunnerPreview(tileCtx, idx, canvas.width, canvas.height);
+    }
+    tile.addEventListener("click", () => {
+      selectChar(idx);
+      game.charIndex = idx;
+    });
+  }
+
+  // --- Best score (session-persisted via localStorage; shown on both
+  // overlays). Updated on every game over with the max seen so far. ---
+  function renderBest() {
+    const best = getBest(localStorage);
+    if (bestScoreEl) bestScoreEl.textContent = String(best);
+    if (bestScoreOverEl) bestScoreOverEl.textContent = String(best);
+  }
+  renderBest();
 
   // --- CTA: build once from the <template>, mount by variant, and fire
   // cta_view exactly once when it actually becomes visible to the player. ---
@@ -48,18 +135,30 @@ function boot() {
 
   // --- Game wiring ---
   const game = new Game("game");
+  game.charIndex = getChar(localStorage);
+  selectChar(game.charIndex);
+
+  // Tracks g.caught (item catches only, not obstacle passes) so onScore can
+  // tell a catch apart from a normal obstacle-passed point and play a blip.
+  let lastCaught = 0;
 
   game.onStart = () => {
     emit("game_start", {});
     audio.startMusic();
+    lastCaught = 0;
   };
   game.onScore = (s) => {
     scoreEl.textContent = String(s);
+    const caughtNow = game.game.caught;
+    if (caughtNow > lastCaught) sfxCatch();
+    lastCaught = caughtNow;
   };
   game.onGameOver = (s) => {
     emit("game_over", { score: s });
     audio.sfxGameOver();
     finalScoreEl.textContent = String(s);
+    updateBest(localStorage, s);
+    renderBest();
     hud.classList.add("hidden");
     overEl.classList.remove("hidden");
     if (!isVariantA) fireCtaView(); // becomes visible only now, for variant B

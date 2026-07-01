@@ -7,7 +7,7 @@
 import { GAME } from "./config.js";
 import { jump } from "./physics.js";
 import { createGame, startGame, stepGame } from "./gamestate.js";
-import { drawBackground, drawRunner, drawObstacle } from "./sprites.js";
+import { drawBackground, drawRunner, drawObstacle, drawCollectible } from "./sprites.js";
 
 // A no-op default so hooks are always callable before the shell sets real ones.
 const noop = () => {};
@@ -17,6 +17,10 @@ export class Game {
   constructor(canvas) {
     this.canvasRef = canvas;
     this.game = createGame(); // { runner, obs, state, score }
+
+    // Cosmetic-only character variant (0-3), passed through to drawRunner.
+    // Settable by the shell (boot.js) before start(); no effect on physics.
+    this.charIndex = 0;
 
     // Shell hooks — settable by Task 14. Kept simple and always callable.
     this.onStart = noop;
@@ -141,6 +145,7 @@ export class Game {
     if (!ctx) return;
     drawBackground(ctx, this.cam, this.worldW);
     for (const o of this.game.obs.obstacles) drawObstacle(ctx, o);
-    drawRunner(ctx, this.game.runner, this.t);
+    for (const item of this.game.col.items) drawCollectible(ctx, item);
+    drawRunner(ctx, this.game.runner, this.t, this.charIndex);
   }
 }

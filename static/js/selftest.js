@@ -3,7 +3,7 @@
 import { GAME } from "./config.js";
 import { createRunner, jump, stepRunner } from "./physics.js";
 import { createGameState, stepObstacles, collides, runnerBox } from "./obstacles.js";
-import { readSession, markVisited, goPresaveUrl } from "./ab.js";
+import { readSession, markVisited, goPresaveUrl, createEmitter } from "./ab.js";
 
 export function run(assert) {
   // Single jump leaves the ground.
@@ -83,6 +83,25 @@ export function run(assert) {
   // presave URL shape.
   assert(goPresaveUrl("A", "sid-1", "button") === "/go/presave?v=A&src=button&sid=sid-1",
          "presave url shape");
+
+  // createEmitter builds the right request and swallows async failures.
+  let captured = null;
+  const okEmit = createEmitter({ sid: "s1", variant: "A" },
+    (url, opts) => { captured = { url, opts }; return Promise.resolve(); });
+  okEmit("game_over", { score: 3 });
+  assert(captured.url === "/api/event", "emit posts to /api/event");
+  const emitBody = JSON.parse(captured.opts.body);
+  assert(emitBody.session_id === "s1" && emitBody.variant === "A"
+    && emitBody.event_type === "game_over" && emitBody.meta.score === 3,
+    "emit body shape correct");
+
+  let emitThrew = false;
+  try {
+    const rejEmit = createEmitter({ sid: "s2", variant: "B" },
+      () => Promise.reject(new Error("net")));
+    rejEmit("visit", {});
+  } catch (_) { emitThrew = true; }
+  assert(emitThrew === false, "emit swallows async post failures");
 }
 
 // Browser bootstrap.

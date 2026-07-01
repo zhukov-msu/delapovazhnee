@@ -28,7 +28,7 @@ export function goPresaveUrl(variant, sid, src) {
 export function createEmitter(session, post = fetch) {
   return function emit(type, meta = {}) {
     try {
-      post("/api/event", {
+      const r = post("/api/event", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -37,6 +37,7 @@ export function createEmitter(session, post = fetch) {
         }),
         keepalive: true,
       });
+      if (r && typeof r.then === "function") r.catch(() => {});
     } catch (_) { /* ignore */ }
   };
 }

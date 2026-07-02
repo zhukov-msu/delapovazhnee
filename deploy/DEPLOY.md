@@ -32,12 +32,15 @@ Repo → **Settings → Secrets and variables → Actions**:
 
 ## 2. Разовая настройка сервера (один раз)
 
+Репозиторий на VDS не клонируется — скрипт надо доставить самому. Со **своей машины** (репо склонирован
+локально), под пользователем с root/sudo на сервере:
 ```bash
-# на VDS под root/sudo:
-curl -fsSLO https://raw.githubusercontent.com/<owner>/<repo>/main/deploy/bootstrap-vds.sh
-sudo bash bootstrap-vds.sh
+scp deploy/bootstrap-vds.sh root@IP:/root/           # или your_sudo_user@IP:~/
+ssh root@IP 'bash /root/bootstrap-vds.sh'            # не под root? → ssh you@IP 'sudo bash ~/bootstrap-vds.sh'
+# Альтернатива только для ПУБЛИЧНОГО репо:
+#   curl -fsSLO https://raw.githubusercontent.com/<owner>/<repo>/main/deploy/bootstrap-vds.sh && sudo bash bootstrap-vds.sh
 ```
-(или скопируй `deploy/bootstrap-vds.sh` на сервер и запусти). Скрипт ставит Docker, создаёт юзера
+Запускается под root/sudo (ставит Docker, юзера — `deploy` ещё нет). Скрипт ставит Docker, создаёт юзера
 `deploy` (+ группа docker), каталог `/opt/delapovazhnee` с подкаталогами под ассеты, заготовку `.env`,
 и swap 2G. После него:
 

@@ -4,6 +4,15 @@
 по SSH (`.github/workflows/deploy.yml`): `rsync` кода + `deploy/on-server.sh` (venv, зависимости,
 перезапуск systemd-сервиса). Обычные push/PR — только тесты (`.github/workflows/ci.yml`).
 
+## 0. Требования к серверу
+
+Минимальный VPS достаточен для промо-кампании: **1 CPU / 1 GB RAM / 10 GB диск / 1 TB трафик**.
+Приложение лёгкое (uvicorn + SQLite + отдача статики). Держать **1 воркер uvicorn** (под 1 GB),
+`pip` ставит wheels (без компиляции). На всякий случай — 1–2 GB swap:
+`sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile`
+(и строка `/swapfile none swap sw 0 0` в `/etc/fstab`). Основной расход трафика — `music.mp3` и крупные
+PNG: держи музыку сжатой (~3–4 МБ). ОС: **Ubuntu 26.04** (системный `python3`; приложению нужен Python ≥ 3.10).
+
 ## 1. GitHub Secrets
 
 Repo → **Settings → Secrets and variables → Actions → New repository secret**:
@@ -20,12 +29,15 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 Сгенерировать пару (если нужна отдельная деплой-пара): `ssh-keygen -t ed25519 -f deploy_key -C github-deploy`
 — приватный `deploy_key` → в секрет `VDS_SSH_KEY`, `deploy_key.pub` → в `authorized_keys` на сервере.
 
-## 2. Разовая настройка сервера (Ubuntu/Debian; поправь под свой дистрибутив)
+## 2. Разовая настройка сервера (Ubuntu 26.04)
 
 ```bash
-# 2.1 Python 3.12 (Ubuntu 24.04 — уже есть; на 22.04 через deadsnakes)
-sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt update
-sudo apt install -y python3.12 python3.12-venv rsync
+# 2.1 Python + rsync. На Ubuntu 26.04 системный python3 подходит (приложению нужен Python >= 3.10) —
+# on-server.sh сам возьмёт python3.12, если он есть, иначе системный python3.
+sudo apt update && sudo apt install -y python3 python3-venv rsync
+# (нужен именно 3.12? поставь через deadsnakes:
+#  sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt update
+#  sudo apt install -y python3.12 python3.12-venv )
 
 # 2.2 Пользователь и каталог
 sudo adduser --disabled-password --gecos "" deploy      # если ещё нет

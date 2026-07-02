@@ -3,9 +3,11 @@
 # Обновляет venv/зависимости и перезапускает сервис. Идемпотентно.
 set -euo pipefail
 
-# venv на python3.12 (см. deploy/DEPLOY.md по установке интерпретатора на сервере).
+# venv на системном python3 (Ubuntu 26.04) либо python3.12, если он установлен отдельно.
+# Приложению нужен Python >= 3.10. См. deploy/DEPLOY.md.
 if [ ! -d .venv ]; then
-  python3.12 -m venv .venv
+  PY="$(command -v python3.12 || command -v python3)"
+  "$PY" -m venv .venv
 fi
 ./.venv/bin/pip install --upgrade pip >/dev/null
 ./.venv/bin/pip install -r requirements.txt

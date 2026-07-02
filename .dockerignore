@@ -1,0 +1,23 @@
+# Не тащим в образ: секреты, БД, локальное окружение, тесты/доки, и бинарные ассеты
+# (музыка/спрайты/обложка кладутся на VDS и монтируются как volume, а не пекутся в образ).
+.git
+.github
+.venv
+db
+.env
+.env.*
+docs
+.superpowers
+node_modules
+tests
+__pycache__
+*.pyc
+.pytest_cache
+.idea
+.DS_Store
+deploy
+*.md
+static/assets
+static/sprites/characters
+static/sprites/items
+static/home/cover.*

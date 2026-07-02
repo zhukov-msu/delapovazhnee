@@ -1,6 +1,7 @@
 name: Deploy
 
-# Деплой на VDS по тэгу вида v* (напр. v1.0.0, v0.3, v2). Сначала тесты, потом деплой.
+# Деплой по тэгу v* (v1.0.0, v0.3, v2, ...): тесты -> сборка образа в GHCR -> сервер тянет и поднимает.
+# Секреты: VDS_HOST, VDS_USER, VDS_PATH, VDS_SSH_KEY (+ опц. VDS_SSH_PORT), GHCR_PAT (read:packages).
 on:
   push:
     tags:
@@ -28,10 +29,37 @@ jobs:
           node tests/js/collectibles.smoke.mjs
           node tests/js/prefs.smoke.mjs
 
-  deploy:
+  build-push:
     needs: test
     runs-on: ubuntu-latest
-    # Требует секретов: VDS_HOST, VDS_USER, VDS_PATH, VDS_SSH_KEY (+ опц. VDS_SSH_PORT).
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.img.outputs.name }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image name (lowercase)
+        id: img
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ steps.img.outputs.name }}:${{ github.ref_name }}
+            ${{ steps.img.outputs.name }}:latest
+
+  deploy:
+    needs: build-push
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -41,8 +69,11 @@ jobs:
           printf '%s\n' "${{ secrets.VDS_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
-      - name: Deploy (rsync) + restart service
+      - name: Ship compose + Caddyfile, then pull & up on VDS
         env:
+          IMAGE: ${{ needs.build-push.outputs.image }}:${{ github.ref_name }}
+          GHCR_OWNER: ${{ github.repository_owner }}
+          GHCR_PAT: ${{ secrets.GHCR_PAT }}
           VDS_HOST: ${{ secrets.VDS_HOST }}
           VDS_USER: ${{ secrets.VDS_USER }}
           VDS_PATH: ${{ secrets.VDS_PATH }}
@@ -50,17 +81,15 @@ jobs:
         run: |
           set -euo pipefail
           PORT="${VDS_SSH_PORT:-22}"
-          SSH="ssh -i $HOME/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=accept-new"
-          # Синхронизируем код. НЕ трогаем: секреты (.env), БД (db/), venv, и загруженные на сервер
-          # бинарные ассеты (музыка/спрайты/обложка) — они живут на VDS и переживают деплой.
-          rsync -az --delete \
-            --exclude='.git/' --exclude='.github/' --exclude='.venv/' --exclude='db/' \
-            --exclude='.env' --exclude='.superpowers/' --exclude='docs/' \
-            --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='.idea/' \
-            --exclude='.DS_Store' --exclude='node_modules/' \
-            --exclude='static/assets/' \
-            --exclude='static/sprites/characters/' --exclude='static/sprites/items/' \
-            --exclude='static/home/cover.*' \
-            -e "$SSH" ./ "$VDS_USER@$VDS_HOST:$VDS_PATH/"
-          # Обновляем зависимости и перезапускаем сервис на сервере.
-          $SSH "$VDS_USER@$VDS_HOST" "cd '$VDS_PATH' && bash deploy/on-server.sh"
+          SSHOPTS="-i $HOME/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=accept-new"
+          # Кладём compose-файл и Caddyfile рядом (сервер не хранит git-репозиторий).
+          scp $SSHOPTS docker-compose.yml "$VDS_USER@$VDS_HOST:$VDS_PATH/docker-compose.yml"
+          scp $SSHOPTS deploy/Caddyfile   "$VDS_USER@$VDS_HOST:$VDS_PATH/Caddyfile"
+          # На сервере: логин в GHCR (приватный образ), тянем нужный тег, поднимаем, чистим старьё.
+          ssh $SSHOPTS "$VDS_USER@$VDS_HOST" "\
+            cd '$VDS_PATH' && \
+            echo '$GHCR_PAT' | docker login ghcr.io -u '$GHCR_OWNER' --password-stdin && \
+            export IMAGE='$IMAGE' && \
+            docker compose pull && \
+            docker compose up -d && \
+            docker image prune -f"

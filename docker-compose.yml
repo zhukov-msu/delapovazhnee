@@ -1,0 +1,35 @@
+# Прод-стек: app (uvicorn) + Caddy (reverse proxy / позже авто-HTTPS).
+# Запускается на VDS: `IMAGE=ghcr.io/<owner>/<repo>:<tag> docker compose up -d`
+# (тег подставляет деплой-воркфлоу; см. .github/workflows/deploy.yml и deploy/DEPLOY.md).
+services:
+  app:
+    image: ${IMAGE:?set IMAGE, e.g. ghcr.io/owner/repo:v1.0.0}
+    restart: unless-stopped
+    env_file:
+      - .env                       # секреты приложения (PRESAVE_URL, ADMIN_*, SECRET_KEY, ...)
+    volumes:
+      - dbdata:/app/db             # sqlite переживает пересоздание контейнера
+      # Бинарные ассеты кладутся на VDS в эти каталоги и монтируются read-only:
+      - ./static/assets:/app/static/assets:ro
+      - ./static/sprites/characters:/app/static/sprites/characters:ro
+      - ./static/sprites/items:/app/static/sprites/items:ro
+    expose:
+      - "8000"                     # только внутри docker-сети; наружу — через Caddy
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"                  # пригодится при переходе на домен+HTTPS
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  dbdata:
+  caddy_data:
+  caddy_config:

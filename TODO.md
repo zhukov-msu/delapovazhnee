@@ -24,23 +24,25 @@
       (в игре сейчас только «блип» на ловле предмета). Подключить при желании.
 - [ ] `admin.css` на моноширинном шрифте (админка намеренно простая) — ок, но можно системный.
 
-## Открытые вопросы — деплой / VDS / CI (нужно от тебя)
+## Деплой / VDS / CI — решено: Docker + Caddy, по IP (HTTP), приватный образ в GHCR
 
-Настроен GitHub Actions: тесты на push/PR + деплой на VDS по тэгу `v*` (см. `deploy/DEPLOY.md`).
-Чтобы заработало, подтверди/предоставь:
+GitHub Actions настроен (`deploy/DEPLOY.md`): тэг `v*` → тесты → сборка образа → push в GHCR →
+сервер `docker compose pull && up -d`. Сборка на раннере GitHub, VDS только тянет (1–2 ГБ хватает).
+Твои шаги, чтобы заработало:
 
-- [ ] **GitHub Secrets** (repo → Settings → Secrets and variables → Actions):
-  - `VDS_HOST` — IP/домен сервера
-  - `VDS_USER` — ssh-пользователь
-  - `VDS_PATH` — каталог приложения на сервере (напр. `/opt/delapovazhnee`)
-  - `VDS_SSH_KEY` — **приватный** ssh-ключ (тот, чей публичный лежит в `~/.ssh/authorized_keys` на VDS)
-  - `VDS_SSH_PORT` — (опц.) порт ssh, если не 22
-- [ ] **ОС/дистрибутив VDS?** (нужно для установки Python 3.12 — Ubuntu/Debian? порядок в `DEPLOY.md`)
-- [ ] **Reverse proxy?** Предполагаю nginx + TLS перед uvicorn (uvicorn слушает `127.0.0.1:8000`).
-      Домен `delapovazhnee.ru`? Нужен ли конфиг nginx/Certbot (заготовку могу дать).
-- [ ] **Первый деплой или сервис уже есть?** Заготовка: systemd-юнит `delapovazhnee.service` (см. `deploy/`).
-- [ ] **Модель ассетов:** большие бинарники (музыка/спрайты/обложка) кладутся **на VDS** в те же пути и
-      **переживают деплой** (rsync их не трогает). Если хочешь коммитить их в git — скажи, уберу исключения.
+- [ ] На VDS (Ubuntu 26.04) один раз: `sudo bash deploy/bootstrap-vds.sh` (ставит Docker, юзера `deploy`,
+      каталоги, заготовку `.env`, swap 2G).
+- [ ] Публичный деплой-ключ → `authorized_keys` юзера `deploy`: `ssh-copy-id -i ~/.ssh/dp-deploy.pub deploy@IP`.
+- [ ] Прод-значения в `/opt/delapovazhnee/.env`: `PRESAVE_URL`, `ADMIN_USER`/`ADMIN_PASS`, `SECRET_KEY`,
+      опц. `PUBLIC_BASE_URL=http://IP` (для QR).
+- [ ] GitHub Secrets: `VDS_HOST`, `VDS_USER=deploy`, `VDS_PATH=/opt/delapovazhnee`, `VDS_SSH_KEY` (приватный),
+      опц. `VDS_SSH_PORT`, и **`GHCR_PAT`** (classic PAT с `read:packages` — сервер тянет приватный образ).
+- [ ] Ассеты на VDS: музыку в `static/assets/`, спрайты в `static/sprites/characters|items/` (переживают деплой).
+- [ ] Выкатка: `git tag v1.0.0 && git push origin v1.0.0`.
+
+Отложено (когда будет домен):
+- [ ] Домен + HTTPS: A-запись → IP, заменить блок `:80` в `deploy/Caddyfile` на домен,
+      `PUBLIC_BASE_URL=https://домен` — Caddy сам выпустит и продлит TLS.
 
 ## Вопросы по продукту
 

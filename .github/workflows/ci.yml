@@ -1,0 +1,34 @@
+name: CI
+
+# Прогон тестов на каждый push и PR (кроме тэгов — их обслуживает deploy.yml).
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r requirements-dev.txt
+      - name: pytest
+        run: python -m pytest -q
+
+  game-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: node game-logic self-tests
+        run: |
+          node tests/js/selftest.node.mjs
+          node tests/js/gamestate.smoke.mjs
+          node tests/js/sprites.smoke.mjs
+          node tests/js/collectibles.smoke.mjs
+          node tests/js/prefs.smoke.mjs

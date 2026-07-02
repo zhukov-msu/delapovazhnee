@@ -1,0 +1,66 @@
+name: Deploy
+
+# Деплой на VDS по тэгу вида v* (напр. v1.0.0, v0.3, v2). Сначала тесты, потом деплой.
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: pip install -r requirements-dev.txt
+      - name: pytest
+        run: python -m pytest -q
+      - name: node game-logic self-tests
+        run: |
+          node tests/js/selftest.node.mjs
+          node tests/js/gamestate.smoke.mjs
+          node tests/js/sprites.smoke.mjs
+          node tests/js/collectibles.smoke.mjs
+          node tests/js/prefs.smoke.mjs
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    # Требует секретов: VDS_HOST, VDS_USER, VDS_PATH, VDS_SSH_KEY (+ опц. VDS_SSH_PORT).
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VDS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Deploy (rsync) + restart service
+        env:
+          VDS_HOST: ${{ secrets.VDS_HOST }}
+          VDS_USER: ${{ secrets.VDS_USER }}
+          VDS_PATH: ${{ secrets.VDS_PATH }}
+          VDS_SSH_PORT: ${{ secrets.VDS_SSH_PORT }}
+        run: |
+          set -euo pipefail
+          PORT="${VDS_SSH_PORT:-22}"
+          SSH="ssh -i $HOME/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=accept-new"
+          # Синхронизируем код. НЕ трогаем: секреты (.env), БД (db/), venv, и загруженные на сервер
+          # бинарные ассеты (музыка/спрайты/обложка) — они живут на VDS и переживают деплой.
+          rsync -az --delete \
+            --exclude='.git/' --exclude='.github/' --exclude='.venv/' --exclude='db/' \
+            --exclude='.env' --exclude='.superpowers/' --exclude='docs/' \
+            --exclude='__pycache__/' --exclude='.pytest_cache/' --exclude='.idea/' \
+            --exclude='.DS_Store' --exclude='node_modules/' \
+            --exclude='static/assets/' \
+            --exclude='static/sprites/characters/' --exclude='static/sprites/items/' \
+            --exclude='static/home/cover.*' \
+            -e "$SSH" ./ "$VDS_USER@$VDS_HOST:$VDS_PATH/"
+          # Обновляем зависимости и перезапускаем сервис на сервере.
+          $SSH "$VDS_USER@$VDS_HOST" "cd '$VDS_PATH' && bash deploy/on-server.sh"
